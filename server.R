@@ -1,5 +1,12 @@
 library(shiny)
 
+get_xy <- function(n)
+{
+  x <- (rnorm(n, 0, 0.2) + 1:n) / (n+1)
+  y <- rnorm(n, 0, 1)
+  list(x=x-mean(x), y=y)
+}
+
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
 
@@ -10,64 +17,74 @@ shinyServer(function(input, output) {
   #     when inputs change
   #  2) Its output type is a plot
 
-  beta <- 0.5
 
+  current_n  <- isolate(input$n)
+  current_xy <- get_xy(current_n)
+
+  get_current <- reactive({
+      if (current_n != input$n)
+      {
+        current_n  <<- input$n
+        current_xy <<- get_xy(current_n)
+        cat("n updated to", current_n, "\n")
+      }
+      x <- current_xy$x
+      y <- input$beta*x + current_xy$y * input$eta
+      y <- y - mean(y)
+      list(x=x, y=y)
+    })
+
+  cat("current_n = ", current_n, "\n")
 
   output$anova <- renderPrint({
-    x <- rnorm(input$n, 0, 0.2) + 1:input$n
-    y <- beta*x + rnorm(input$n, 0, input$eta * beta * input$n)
-    x <- x-mean(x)
-    y <- y-mean(y)
-    anova(lm(y ~ -1 + x))}
-  )
+    d <- get_current();
+    anova(lm(y ~ -1 + x, data=get_current()))
+  })
 
-  output$distPlot <- renderPlot({
-
-    x <- rnorm(input$n, 0, 0.2) + 1:input$n
-    y <- beta*x + rnorm(input$n, 0, input$eta * beta * input$n)
-
-    x <- x-mean(x)
-    y <- y-mean(y)
-
-    bhat <- coef(lm(y ~ -1 + x))
-
-    # ok, work out ss_y
-    ss_y <- sum(y^2)
-    ss_x <- sum(x^2)
-    ss_xy <- sum(x*y)
-
-    # work out rss
-    rss <- sum((y - bhat*x)^2)
-
-    # factor ss_y into rss
-
-    # plot x vs y
-    par(mfrow=c(1,3))
-    plot(NULL, xlim=max(abs(x)) * c(-1, 1), ylim = max(abs(y)) * c(-1, 1), xlab="", ylab="", xaxt="n", yaxt="n")
+  output$dataPlot <- renderPlot({
+    d <- get_current();
+    ss_y <- sum(d$y^2)
+    par(mai=rep(0.1,4))
+    plot(NULL, xlim=c(-0.5, 0.5), ylim = c(-4, 4), xlab="", ylab="", xaxt="n", yaxt="n")
 
     abline(h=0, lty="dashed")
-    segments(x, 0, x, y, col="blue")
-    points(x,y, pch=19)
-    text(0.8*max(abs(x)), -0.8*max(abs(y)), bquote(SS[y] == .(round(ss_y, 2))), col="blue", cex=1.5)
+    segments(d$x, 0, d$x, d$y, col="blue")
+    points(d$x,d$y, pch=19)
+    text(0.4, -3.2, bquote(SS[y] == .(round(ss_y, 2))), col="blue", cex=1.5)
+  })
 
-    plot(NULL, xlim=max(abs(x)) * c(-1, 1), ylim = max(abs(y)) * c(-1, 1), xlab="", ylab="", xaxt="n", yaxt="n")
+  output$linePlot <- renderPlot({
+    d <- get_current();
+    ss_x <- sum(d$x^2)
+    par(mai=rep(0.1,4))
+    plot(NULL, xlim=c(-0.5, 0.5), ylim = c(-4, 4), xlab="", ylab="", xaxt="n", yaxt="n")
+
+    bhat <- coef(lm(y ~ -1 + x, data=d))
     abline(h=0, lty="dashed")
     abline(a=0, b=bhat, lwd=2)
 
-    under <- ifelse(bhat*x < 0, bhat*x, 0)
-    over  <- ifelse(bhat*x > 0, bhat*x, 0)
-    segments(x, ifelse(under < y, under, y), x, under, lty="dotted")
-    segments(x, ifelse(over > y, over, y), x, over, lty="dotted")
-    segments(x, 0, x, bhat*x, col="red")
+    under <- ifelse(bhat*d$x < 0, bhat*d$x, 0)
+    over  <- ifelse(bhat*d$x > 0, bhat*d$x, 0)
+    segments(d$x, ifelse(under < d$y, under, d$y), d$x, under, lty="dotted")
+    segments(d$x, ifelse(over > d$y, over, d$y), d$x, over, lty="dotted")
+    segments(d$x, 0, d$x, bhat*d$x, col="red")
 
-    points(x,y, pch=19)
-    text(0.8*max(abs(x)), -0.8*max(abs(y)), bquote(SS[line] == .(round(bhat^2*ss_x, 2))), col="red", cex=1.5)
+    points(d$x,d$y, pch=19)
+    text(0.4, -3.2, bquote(SS[model] == .(round(bhat^2*ss_x, 2))), col="red", cex=1.5)
+  })
 
-    plot(NULL, xlim=max(abs(x)) * c(-1, 1), ylim = max(abs(y)) * c(-1, 1), xlab="", ylab="", xaxt="n", yaxt="n")
+  output$residPlot <- renderPlot({
+    d <- get_current();
+    par(mai=rep(0.1,4))
+    plot(NULL, xlim=c(-0.5, 0.5), ylim = c(-4, 4), xlab="", ylab="", xaxt="n", yaxt="n")
+
+    bhat <- coef(lm(y ~ -1 + x, data=d))
+    rss <- sum((d$y - bhat*d$x)^2)
+
     abline(a=0, b=bhat, lwd=2)
-    segments(x, bhat*x, x, y, col="red")
-    points(x,y, pch=19)
-    text(0.8*max(abs(x)), -0.8*max(abs(y)), bquote(SS[res] == .(round(rss, 2))), col="red", cex=1.5)
+    segments(d$x, bhat*d$x, d$x, d$y, col="red")
+    points(d$x, d$y, pch=19)
+    text(0.4, -3.2, bquote(SS[res] == .(round(rss, 2))), col="red", cex=1.5)
   })
 })
 
