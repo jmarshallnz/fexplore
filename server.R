@@ -34,8 +34,6 @@ shinyServer(function(input, output) {
       list(x=x, y=y)
     })
 
-  cat("current_n = ", current_n, "\n")
-
   output$anova <- renderPrint({
     d <- get_current();
     anova(lm(y ~ -1 + x, data=get_current()))
