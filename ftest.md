@@ -1,4 +1,4 @@
-The F test is a general way to assess whether a linear model explains a signficant portion of the variaion in the response variable.
+The F test is a general way to assess whether a linear model explains a signficant portion of the variation in the response variable.
 
 The idea is to partition the total variation, or sum of squares, in the response $SS_{tot}$ into variation explained by the linear model $SS_{model}$, and left over, or residual variation $SS_{res}$
 $$SS_{tot} = SS_{model} + SS_{res}.$$
