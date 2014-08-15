@@ -25,7 +25,7 @@ shinyUI(fluidPage(
        tabPanel("Model",
         h3("Variation explained by the model"),
         plotOutput("linePlot"),
-        p("The variation explained by the model is found by the sum of the square distances (blue lines) between the mean (the null model, where we have only an intercept (the dashed line), and the mean under the full model (the solid line)."),
+        p("The variation explained by the model is found by the sum of the square distances (blue lines) between the mean under the null model, where we have only an intercept (the dashed line), and the mean under the full model (the solid line)."),
         p("This will depend on the strength of the relationship, or the magnitude slope.")
        ),
        tabPanel("Residuals",
