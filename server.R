@@ -69,7 +69,7 @@ shinyServer(function(input, output) {
     plot(NULL, xlim=c(-0.5, 0.5), ylim = c(-4, 4), xlab="", ylab="", xaxt="n", yaxt="n")
 
     abline(h=0, lty="dashed")
-    segments(d$x, 0, d$x, d$y, col="blue")
+    segments(d$x, 0, d$x, d$y, col="blue", lwd=1.5)
     points(d$x,d$y, pch=19)
     text(0.4, -3.2, bquote(SS[tot] == .(round(ss_y, 2))), col="blue", cex=1.5)
   })
@@ -86,12 +86,12 @@ shinyServer(function(input, output) {
 
     under <- ifelse(bhat*d$x < 0, bhat*d$x, 0)
     over  <- ifelse(bhat*d$x > 0, bhat*d$x, 0)
-    segments(d$x, ifelse(under < d$y, under, d$y), d$x, under, lty="dotted")
-    segments(d$x, ifelse(over > d$y, over, d$y), d$x, over, lty="dotted")
-    segments(d$x, 0, d$x, bhat*d$x, col="red")
+    segments(d$x, ifelse(under < d$y, under, d$y), d$x, under, lty="dotted", col="grey60")
+    segments(d$x, ifelse(over > d$y, over, d$y), d$x, over, lty="dotted", col="grey60")
+    segments(d$x, 0, d$x, bhat*d$x, col="blue", lwd=1.5)
 
     points(d$x,d$y, pch=19)
-    text(0.4, -3.2, bquote(SS[model] == .(round(bhat^2*ss_x, 2))), col="red", cex=1.5)
+    text(0.4, -3.2, bquote(SS[model] == .(round(bhat^2*ss_x, 2))), col="blue", cex=1.5)
   })
 
   output$residPlot <- renderPlot({
@@ -103,9 +103,9 @@ shinyServer(function(input, output) {
     rss <- sum((d$y - bhat*d$x)^2)
 
     abline(a=0, b=bhat, lwd=2)
-    segments(d$x, bhat*d$x, d$x, d$y, col="red")
+    segments(d$x, bhat*d$x, d$x, d$y, col="blue", lwd=1.5)
     points(d$x, d$y, pch=19)
-    text(0.4, -3.2, bquote(SS[res] == .(round(rss, 2))), col="red", cex=1.5)
+    text(0.4, -3.2, bquote(SS[res] == .(round(rss, 2))), col="blue", cex=1.5)
   })
 })
 

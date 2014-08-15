@@ -1,4 +1,5 @@
 library(shiny)
+library(markdown)
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
@@ -24,13 +25,13 @@ shinyUI(fluidPage(
        tabPanel("Model",
         h3("Variation explained by the model"),
         plotOutput("linePlot"),
-        p("The variation explained by the model is found by the sum of the square distances (red lines) between the mean (the null model, where we have only an intercept (the dashed line), and the mean under the full model (the solid line)."),
+        p("The variation explained by the model is found by the sum of the square distances (blue lines) between the mean (the null model, where we have only an intercept (the dashed line), and the mean under the full model (the solid line)."),
         p("This will depend on the strength of the relationship, or the magnitude slope.")
        ),
        tabPanel("Residuals",
         h3("Residual variation"),
         plotOutput("residPlot"),
-        p("The residual variation is what is left over after explaining the model, i.e. the sum of the squared distances (red lines) between the data and the mean of the full model (the solid line)."),
+        p("The residual variation is what is left over after explaining the model, i.e. the sum of the squared distances (blue lines) between the data and the mean of the full model (the solid line)."),
         p("This is mostly governed by the residual variation slider.  Notice that the variation explained by the model plus the residual variation add to give total variation.")
        ),
        tabPanel("ANOVA",
@@ -52,20 +53,20 @@ shinyUI(fluidPage(
                   min = 10,
                   max = 100,
                   step = 5,
-                  value = 10)),
+                  value = 30)),
                 column(4,sliderInput("eta",
                   "Amount of residual variation:",
                   min = 0.05,
                   max = 1,
                   step = 0.05,
-                  value = 0.3)),
+                  value = 0.6)),
                column(4,sliderInput("beta",
                   "Magnitude of slope:",
                   min = -3,
                   max = 3,
                   step = 0.01,
                   ticks = F,
-                  value = 1)))
+                  value = 3)))
       )
     )
   )
